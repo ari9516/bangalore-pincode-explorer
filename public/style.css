@@ -163,3 +163,28 @@ footer {
   background-color: #ff914d20;
   color: #1e3c72;
 }
+
+/* Loading spinner inside button */
+.spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+ 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+ 
+/* Disabled state while loading */
+button:disabled {
+  opacity: 0.75;
+  cursor: not-allowed;
+  transform: none;
+}
+ 

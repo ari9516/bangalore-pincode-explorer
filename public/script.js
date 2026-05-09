@@ -5,7 +5,33 @@ const areaInput = document.getElementById('areaInput');
 const searchAreaBtn = document.getElementById('searchAreaBtn');
 const areaResult = document.getElementById('areaResult');
 
-// ----- Autocomplete Dropdown for Area Input -----
+// ─────────────────────────────────────────────
+// Button Loading State Helpers
+// ─────────────────────────────────────────────
+
+function setButtonLoading(btn, isLoading) {
+  if (isLoading) {
+    btn.disabled = true;
+    btn.dataset.originalText = btn.textContent;
+    btn.innerHTML = '<span class="spinner"></span> Searching...';
+  } else {
+    btn.disabled = false;
+    btn.textContent = btn.dataset.originalText || 'Search';
+  }
+}
+
+// ─────────────────────────────────────────────
+// Result Display Helper
+// ─────────────────────────────────────────────
+
+function showResult(element, content, isError = false) {
+  element.innerHTML = `<div class="${isError ? 'error' : 'success'}">${content}</div>`;
+}
+
+// ─────────────────────────────────────────────
+// Autocomplete Dropdown
+// ─────────────────────────────────────────────
+
 let dropdownContainer = null;
 
 function createDropdown() {
@@ -30,7 +56,7 @@ function showSuggestions(suggestions) {
     item.addEventListener('click', () => {
       areaInput.value = sugg;
       dropdownContainer.style.display = 'none';
-      searchByArea(); // Automatically search after selection
+      searchByArea();
     });
     dropdownContainer.appendChild(item);
   });
@@ -60,59 +86,73 @@ async function fetchSuggestions(prefix) {
   }
 }
 
-// Attach event listeners for autocomplete
 areaInput.addEventListener('input', (e) => {
   const prefix = e.target.value.trim();
   fetchSuggestions(prefix);
 });
 
-// Hide dropdown when clicking outside
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
   if (areaInput !== e.target && (!dropdownContainer || !dropdownContainer.contains(e.target))) {
     hideDropdown();
   }
 });
 
-// ----- Existing search functions -----
-function showResult(element, content, isError = false) {
-  element.innerHTML = `<div class="${isError ? 'error' : 'success'}">${content}</div>`;
-}
+// ─────────────────────────────────────────────
+// Search by Pincode
+// ─────────────────────────────────────────────
 
 async function searchByPincode() {
   const pincode = pincodeInput.value.trim();
+
   if (!pincode) {
     showResult(pincodeResult, '❌ Please enter a pincode', true);
     return;
   }
   if (!/^\d{6}$/.test(pincode)) {
-    showResult(pincodeResult, '❌ Pincode must be 6 digits', true);
+    showResult(pincodeResult, '❌ Pincode must be exactly 6 digits', true);
     return;
   }
-  pincodeResult.innerHTML = '<div>🔍 Searching...</div>';
+
+  setButtonLoading(searchPincodeBtn, true);
+  pincodeResult.innerHTML = '';
+
   try {
     const response = await fetch(`/api/pincode/${pincode}`);
     const data = await response.json();
+
     if (data.success) {
       const areaList = data.areas.map(area => `📍 ${area}`).join('<br>');
-      showResult(pincodeResult, `✅ <strong>Areas under pincode ${pincode}:</strong><br>${areaList}`);
+      showResult(pincodeResult, `✅ <strong>Areas under pincode ${pincode}:</strong><br><br>${areaList}`);
     } else {
       showResult(pincodeResult, `❌ ${data.message || 'Pincode not found'}`, true);
     }
   } catch (err) {
     showResult(pincodeResult, '⚠️ Network error. Please try again.', true);
+  } finally {
+    setButtonLoading(searchPincodeBtn, false);
   }
 }
 
+// ─────────────────────────────────────────────
+// Search by Area
+// ─────────────────────────────────────────────
+
 async function searchByArea() {
   const areaName = areaInput.value.trim();
+
   if (!areaName) {
     showResult(areaResult, '❌ Please enter an area name', true);
     return;
   }
-  areaResult.innerHTML = '<div>🔍 Searching...</div>';
+
+  setButtonLoading(searchAreaBtn, true);
+  areaResult.innerHTML = '';
+  hideDropdown();
+
   try {
     const response = await fetch(`/api/area?name=${encodeURIComponent(areaName)}`);
     const data = await response.json();
+
     if (data.success) {
       let resultHtml = `✅ <strong>Pincode(s) matching "${areaName}":</strong><br><br>`;
       data.results.forEach(item => {
@@ -124,10 +164,15 @@ async function searchByArea() {
     }
   } catch (err) {
     showResult(areaResult, '⚠️ Network error. Please try again.', true);
+  } finally {
+    setButtonLoading(searchAreaBtn, false);
   }
 }
 
-// Event binding
+// ─────────────────────────────────────────────
+// Event Binding
+// ─────────────────────────────────────────────
+
 searchPincodeBtn.addEventListener('click', searchByPincode);
 searchAreaBtn.addEventListener('click', searchByArea);
 pincodeInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') searchByPincode(); });
