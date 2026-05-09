@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bangalore Pincode Explorer</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📍 Bangalore Pincode Explorer</h1>
+      <p>Search by Pincode ↔ Area Name</p>
+    </header>
+    <div class="search-grid">
+      <div class="card">
+        <h2>🔢 Pincode → Area</h2>
+        <div class="input-group">
+          <input type="text" id="pincodeInput" placeholder="Enter pincode (e.g., 560001)" maxlength="6">
+          <button id="searchPincodeBtn">Search</button>
+        </div>
+        <div id="pincodeResult" class="result-box"></div>
+      </div>
+      <div class="card">
+        <h2>🏙️ Area → Pincode</h2>
+        <div class="input-group">
+          <input type="text" id="areaInput" placeholder="Enter area name (e.g., Koramangala)">
+          <button id="searchAreaBtn">Search</button>
+        </div>
+        <div id="areaResult" class="result-box"></div>
+      </div>
+    </div>
+    <footer>
+      <p>Bangalore pincode dataset • Full stack explorer</p>
+    </footer>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>
